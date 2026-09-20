@@ -32,7 +32,8 @@ class TestTextNode(unittest.TestCase):
 
     def test_text_node_to_html_node_unknown_type(self):
         with self.assertRaises(ValueError):
-            TextNode("t", "nope").text_node_to_html_node(TextNode("t", "nope"))
+            bad = TextNode("t", "nope")  # type: ignore[arg-type]  # deliberately invalid
+            bad.text_node_to_html_node(bad)
 
 
 if __name__ == "__main__":
