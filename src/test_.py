@@ -3,6 +3,7 @@ import unittest
 from _ import (
     BlockType,
     block_to_block_type,
+    extract_title,
     extract_markdown_images,
     extract_markdown_links,
     markdown_to_blocks,
@@ -180,6 +181,21 @@ the **same** even with inline stuff
             '<div><h2>A <b>big</b> heading</h2><blockquote>quoted more</blockquote>'
             "<ul><li>one</li><li><b>two</b></li></ul>"
             '<ol><li>first</li><li><a href="http://x">link</a></li></ol></div>',
+        )
+
+
+    def test_extract_title(self):
+        self.assertEqual(extract_title("# Hello"), "Hello")
+        self.assertEqual(extract_title("intro\n\n#   Hello world  \n## Sub"), "Hello world")
+
+    def test_extract_title_missing(self):
+        with self.assertRaises(ValueError):
+            extract_title("## Not h1\n\ntext")
+
+    def test_image_to_html(self):
+        self.assertEqual(
+            markdown_to_html_node("![alt](/a.png)").to_html(),
+            '<div><p><img src="/a.png" alt="alt"></img></p></div>',
         )
 
 

@@ -189,3 +189,10 @@ def _block_to_html_node(block: str) -> ParentNode:
 
 def markdown_to_html_node(markdown: str) -> ParentNode:
     return ParentNode("div", [_block_to_html_node(b) for b in markdown_to_blocks(markdown)])
+
+
+def extract_title(markdown: str) -> str:
+    match = re.search(r"^# (.+)$", markdown, re.MULTILINE)
+    if match is None:
+        raise ValueError("markdown has no h1 header")
+    return match.group(1).strip()

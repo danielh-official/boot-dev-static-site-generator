@@ -12,8 +12,8 @@ class TestLeafNode(unittest.TestCase):
         node = LeafNode(None, "Hello, world!")
         self.assertEqual(node.to_html(), "Hello, world!")
 
-    def test_leaf_to_html_empty_value(self):
-        node = LeafNode("p", "")
+    def test_leaf_to_html_none_value(self):
+        node = LeafNode("p", None)
         with self.assertRaises(ValueError):
             node.to_html()
 
