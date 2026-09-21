@@ -94,3 +94,14 @@ def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
 
 def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
     return _split_nodes_markdown(old_nodes, extract_markdown_links, TextType.LINK, "")
+
+def markdown_to_blocks(markdown: str) -> list[str]:
+    if markdown is None:
+        return []
+
+    markdown = markdown.strip()
+    if not markdown:
+        return []
+
+    blocks = re.split(r"\n\s*\n+", markdown)
+    return [block.strip() for block in blocks if block.strip()]
