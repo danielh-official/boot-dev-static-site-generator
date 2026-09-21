@@ -46,3 +46,51 @@ def extract_markdown_images(text: str) -> list[tuple[str, str]]:
 def extract_markdown_links(text: str) -> list[tuple[str, str]]:
     pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
     return re.findall(pattern, text)
+
+def _split_nodes_markdown(
+    old_nodes: list[TextNode], extractor, markdown_type: TextType, prefix: str
+) -> list[TextNode]:
+    new_nodes: list[TextNode] = []
+
+    for node in old_nodes:
+        if node.text is None or node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
+
+        matches = extractor(node.text)
+        if not matches:
+            new_nodes.append(node)
+            continue
+
+        remaining = node.text
+        while True:
+            match = matches[0]
+            label, url = match
+            markdown = f"{prefix}[{label}]({url})" if prefix else f"[{label}]({url})"
+            parts = remaining.split(markdown, 1)
+            if len(parts) == 1:
+                break
+
+            before, remaining = parts
+            if before:
+                new_nodes.append(TextNode(before, TextType.TEXT))
+
+            new_nodes.append(TextNode(label, markdown_type, url))
+            matches = extractor(remaining)
+            if not matches:
+                if remaining:
+                    new_nodes.append(TextNode(remaining, TextType.TEXT))
+                break
+
+        if not matches and not remaining:
+            continue
+
+    return [node for node in new_nodes if node.text]
+
+
+def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
+    return _split_nodes_markdown(old_nodes, extract_markdown_images, TextType.IMAGE, "!")
+
+
+def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
+    return _split_nodes_markdown(old_nodes, extract_markdown_links, TextType.LINK, "")

@@ -1,6 +1,12 @@
 import unittest
 
-from _ import extract_markdown_images, split_nodes_delimiter, extract_markdown_links
+from _ import (
+    extract_markdown_images,
+    extract_markdown_links,
+    split_nodes_delimiter,
+    split_nodes_image,
+    split_nodes_link,
+)
 from textnode import TextNode, TextType
 
 
@@ -50,6 +56,36 @@ class TestSplitNodesDelimiter(unittest.TestCase):
             ("OpenAI", "https://www.openai.com"),
         ]
         self.assertEqual(extract_markdown_links(text), expected)
+
+    def test_split_nodes_image(self):
+        nodes = [
+            TextNode("This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and more", TextType.TEXT)
+        ]
+        expected = [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("rick roll", TextType.IMAGE, "https://i.imgur.com/aKaOqIh.gif"),
+            TextNode(" and more", TextType.TEXT),
+        ]
+        self.assertEqual(split_nodes_image(nodes), expected)
+
+    def test_split_nodes_link(self):
+        nodes = [
+            TextNode("This is text with a [Google](https://www.google.com) and more", TextType.TEXT)
+        ]
+        expected = [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("Google", TextType.LINK, "https://www.google.com"),
+            TextNode(" and more", TextType.TEXT),
+        ]
+        self.assertEqual(split_nodes_link(nodes), expected)
+
+    def test_split_nodes_image_no_match_returns_original_node(self):
+        node = TextNode("This is plain text", TextType.TEXT)
+        self.assertEqual(split_nodes_image([node]), [node])
+
+    def test_split_nodes_link_no_match_returns_original_node(self):
+        node = TextNode("This is plain text", TextType.TEXT)
+        self.assertEqual(split_nodes_link([node]), [node])
 
 
 if __name__ == "__main__":
