@@ -1,6 +1,6 @@
 import unittest
 
-from _ import split_nodes_delimiter
+from _ import extract_markdown_images, split_nodes_delimiter, extract_markdown_links
 from textnode import TextNode, TextType
 
 
@@ -34,6 +34,22 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         node = TextNode("This is text with a `code block", TextType.TEXT)
         with self.assertRaisesRegex(ValueError, "missing closing delimiter"):
             split_nodes_delimiter([node], "`", TextType.CODE)
+
+    def test_extract_markdown_images(self):
+        text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
+        expected = [
+            ("rick roll", "https://i.imgur.com/aKaOqIh.gif"),
+            ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg"),
+        ]
+        self.assertEqual(extract_markdown_images(text), expected)
+        
+    def test_extract_markdown_links(self):
+        text = "This is text with a [Google](https://www.google.com) and [OpenAI](https://www.openai.com)"
+        expected = [
+            ("Google", "https://www.google.com"),
+            ("OpenAI", "https://www.openai.com"),
+        ]
+        self.assertEqual(extract_markdown_links(text), expected)
 
 
 if __name__ == "__main__":
