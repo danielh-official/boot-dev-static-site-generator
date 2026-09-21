@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: python3 -m unittest discover -s src
-      - run: python3 src/main.py
+      - run: python3 src/main.py "/${{ github.event.repository.name }}/"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
