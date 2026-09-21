@@ -1,6 +1,8 @@
 import unittest
 
 from _ import (
+    BlockType,
+    block_to_block_type,
     extract_markdown_images,
     extract_markdown_links,
     markdown_to_blocks,
@@ -107,6 +109,30 @@ This is the same paragraph on a new line
                 "- This is a list\n- with items",
             ],
         )
+
+    def test_block_to_block_type_heading(self):
+        self.assertEqual(block_to_block_type("# Heading"), BlockType.HEADING)
+        self.assertEqual(block_to_block_type("## Subheading"), BlockType.HEADING)
+
+    def test_block_to_block_type_code(self):
+        block = "```\nprint('hi')\n```"
+        self.assertEqual(block_to_block_type(block), BlockType.CODE)
+
+    def test_block_to_block_type_quote(self):
+        block = "> quote line\n> second line\n>third line"
+        self.assertEqual(block_to_block_type(block), BlockType.QUOTE)
+
+    def test_block_to_block_type_unordered_list(self):
+        block = "- one\n- two\n- three"
+        self.assertEqual(block_to_block_type(block), BlockType.UNORDERED_LIST)
+
+    def test_block_to_block_type_ordered_list(self):
+        block = "1. one\n2. two\n3. three"
+        self.assertEqual(block_to_block_type(block), BlockType.ORDERED_LIST)
+
+    def test_block_to_block_type_paragraph(self):
+        block = "This is a normal paragraph"
+        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,16 @@
 import re
+from enum import Enum
 
 from textnode import TextNode, TextType
+
+
+class BlockType(Enum):
+    HEADING = "heading"
+    CODE = "code"
+    QUOTE = "quote"
+    UNORDERED_LIST = "unordered_list"
+    ORDERED_LIST = "ordered_list"
+    PARAGRAPH = "paragraph"
 
 
 def split_nodes_delimiter(
@@ -43,9 +53,11 @@ def extract_markdown_images(text: str) -> list[tuple[str, str]]:
     pattern = r"!\[([^\[\]]*)\]\(([^\(\)]*)\)"
     return re.findall(pattern, text)
 
+
 def extract_markdown_links(text: str) -> list[tuple[str, str]]:
     pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
     return re.findall(pattern, text)
+
 
 def _split_nodes_markdown(
     old_nodes: list[TextNode], extractor, markdown_type: TextType, prefix: str
@@ -89,11 +101,14 @@ def _split_nodes_markdown(
 
 
 def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
-    return _split_nodes_markdown(old_nodes, extract_markdown_images, TextType.IMAGE, "!")
+    return _split_nodes_markdown(
+        old_nodes, extract_markdown_images, TextType.IMAGE, "!"
+    )
 
 
 def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
     return _split_nodes_markdown(old_nodes, extract_markdown_links, TextType.LINK, "")
+
 
 def markdown_to_blocks(markdown: str) -> list[str]:
     if markdown is None:
@@ -105,3 +120,32 @@ def markdown_to_blocks(markdown: str) -> list[str]:
 
     blocks = re.split(r"\n\s*\n+", markdown)
     return [block.strip() for block in blocks if block.strip()]
+
+
+def block_to_block_type(block: str) -> BlockType:
+    if re.match(r"^#{1,6} .+", block):
+        return BlockType.HEADING
+
+    if re.fullmatch(r"```\n[\s\S]*\n```", block):
+        return BlockType.CODE
+
+    lines = block.splitlines()
+    if lines and all(re.match(r"> ?.*", line) for line in lines):
+        return BlockType.QUOTE
+
+    if lines and all(re.match(r"- .+", line) for line in lines):
+        return BlockType.UNORDERED_LIST
+
+    if lines:
+        ordered_list_pattern = re.compile(r"^(\d+)\. .+")
+        if all(ordered_list_pattern.match(line) for line in lines):
+            numbers = [
+                int(match.group(1))
+                for line in lines
+                for match in [ordered_list_pattern.match(line)]
+                if match
+            ]
+            if numbers == list(range(1, len(numbers) + 1)):
+                return BlockType.ORDERED_LIST
+
+    return BlockType.PARAGRAPH
