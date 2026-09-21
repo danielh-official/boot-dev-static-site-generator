@@ -30,9 +30,19 @@ def generate_page(from_path, template_path, dest_path):
         f.write(page)
 
 
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    for name in os.listdir(dir_path_content):
+        src_path = os.path.join(dir_path_content, name)
+        if os.path.isdir(src_path):
+            generate_pages_recursive(src_path, template_path, os.path.join(dest_dir_path, name))
+        elif name.endswith(".md"):
+            dest_path = os.path.join(dest_dir_path, name[:-3] + ".html")
+            generate_page(src_path, template_path, dest_path)
+
+
 def main():
     copy_directory("static", "public")
-    generate_page("content/index.md", "template.html", "public/index.html")
+    generate_pages_recursive("content", "template.html", "public")
     obj = TextNode("This is some anchor text", TextType.PLAIN, "https://www.boot.dev")
 
     print(obj.__repr__())
